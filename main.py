@@ -2,13 +2,20 @@ import eel
 import pandas as pd
 
 
-file_path = r"C:\Tex Onsite\Tex_reff\shernof\thread-gage\Tex At Site Thread Gage Worksheet.xlsm"
+file_path = r"/Volumes/DDrive/Python-Projects/thread-gage/Tex At Site Thread Gage Worksheet.xlsm"
 df = pd.read_excel(file_path, sheet_name="Variables", engine="openpyxl" )
+# print(df.iloc[16:58, 1])
 eel.init('GUI')
-# items = None
+
+
+type = None
+print(type)
 # receive from JS
+
+
 @eel.expose
 def thread_gage(type):
+    print(type)
     return type
 
 # end of receive from JS
@@ -22,7 +29,7 @@ def thread_gage(type):
 
 @eel.expose    
 def get_model(type='metric'):
-    # print(type)
+    print(type)
     if type.lower() == "metric":
         series = df.iloc[16:58, 1] #metric
     else:
@@ -30,7 +37,10 @@ def get_model(type='metric'):
 
     # global items
     items = [str(x).strip() for x in series.tolist() if pd.notna(x) and str(x).strip()]
+    print(items)
     return items
+
+thread_gage()
 get_model()
 
 #end of to JS

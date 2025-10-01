@@ -1,34 +1,33 @@
 
+// document.addEventListener("DOMContentLoaded",()=>{
+    
+// })
+
 let thread_type = document.getElementById('model-type')
 let thread_gage_model = document.getElementById('model')
-// Setting the of thread type
-model_type = ['metric', 'imperial']
-type = 'metric'
+let testing = load_type()
+console.log(testing)
 
 // getting the thread type
 async function load_type(){
-    // let dropdown = document.getElementById('model-type')
-    types = model_type
-    types.forEach(type => {
-        let option = document.createElement('option')
-        option.text = type
-        option.value = type
-        thread_type.add(option)
-    })  
-    // console.log(thread_type.value)
-    // await eel.get_model(thread_type.value)
+    let type = thread_type.value
+    
+     eel.thread_gage(type)()
+    return type
 }
+console.log(load_type)
 
-// async function fetch_models (){
-//     let models = await eel.export_items()();
-//     console.log(models)
-//     models.forEach(model => {
-//         let option = document.createElement('option')
-//         option.text = model
-//         option.value = model
-//         thread_gage_model.add(option)
-//     })
-// }
+async function fetch_models(){
+    let models = await eel.export_items()();
+    // let models = if 
+    console.log(models)
+    models.forEach(model => {
+        let option = document.createElement('option')
+        option.text = model
+        option.value = model
+        thread_gage_model.add(option)
+    })
+}
 
 // end of thread type
 
@@ -40,5 +39,5 @@ async function load_type(){
 // }
 
 load_type()
-// fetch_models()
+// fetch_models()s
 // send_type_to_python()
