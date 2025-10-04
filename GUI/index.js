@@ -1,43 +1,29 @@
+// document.addEventListener("DOMContentLoaded", () => update_model());
+async function update_model(){
+    let thread_type = document.getElementById('model-type').value
 
-// document.addEventListener("DOMContentLoaded",()=>{
-    
-// })
-
-let thread_type = document.getElementById('model-type')
-let thread_gage_model = document.getElementById('model')
-let testing = load_type()
-console.log(testing)
-
-// getting the thread type
-async function load_type(){
-    let type = thread_type.value
-    
-     eel.thread_gage(type)()
-    return type
-}
-console.log(load_type)
-
-async function fetch_models(){
-    let models = await eel.export_items()();
-    // let models = if 
-    console.log(models)
-    models.forEach(model => {
-        let option = document.createElement('option')
-        option.text = model
-        option.value = model
-        thread_gage_model.add(option)
-    })
+    let thread_gage_model = document.getElementById('model')
+    try {
+        const items = await eel.get_model(thread_type)()
+        thread_gage_model.innerHTML = items.map((item) =>  
+         `<option value="${item}">${item}</option>`   
+        )
+    }   catch (error) {
+        thread_gage_model.innerHTML = `<option>Model</option>`;
+    }
 }
 
-// end of thread type
+async function model_selected(){
+    let selected = document.getElementById('model').value
+    console.log(selected)
+    let thread_type = document.getElementById('model-type').value
+    console.log(thread_type)
+    let model_title = document.getElementById('model-title')
+    let myTable = document.getElementById('table')
+    model_title.innerText = `Thread Gage Parameter of ${selected} as per AS1014`
 
-// async function send_type_to_python(){
-//     // thread type to python
-//     let type = thread_type.value
-//     // await eel.thread_gage(type)
-//     await eel.thread_gage(type)
-// }
+    await eel.model_selected(selected, thread_type)()
+    
+}
 
-load_type()
-// fetch_models()s
-// send_type_to_python()
+

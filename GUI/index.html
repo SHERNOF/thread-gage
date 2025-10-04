@@ -12,23 +12,45 @@
         <div class="left-panel">
             <h3>Equipment Setup</h3>
             <div>
-                <select name="model-type" id="model-type" onchange='load_type() ' >
+                <select name="model-type" id="model-type" onchange='update_model()' >
                     <option>Select Thread Gage Type</option>
-                    <option>Metric</option>
-                    <option>Imperial</option>
+                    <option>metric</option>
+                    <option>imperial</option>
                 </select>
             </div>
             <div>
-                <select name="model" id="model" >
+                <select name="model" id="model" onchange="model_selected()">
                     <option>Model</option>
                 </select>
+            </div>
+            <div class="features" id="features" >
+                <div style="display:flex; flex-direction:column; justify-content: center; align-items: center">
+                    <div style="display:flex; flex-direction:column; text-align: left; width: 90%; font-size: 0.7rem; color: wheat;">
+                        <label>Pitch Diameter</label>
+                    </div>
+                    <select name="pitch" id="pitch">
+                        <option>Go & No-Go</option>
+                        <option>Go</option>
+                        <option>No-Go</option>
+                    </select>
+                </div>
+                <div style="display:flex; flex-direction:column; justify-content: center; align-items: center">
+                    <div style="display:flex; flex-direction:column; text-align: left; width: 90%; font-size: .7rem; color: wheat">
+                        <label for="majorD">Major Diameter</label>
+                    </div>
+                    <select name="majorD" id="majorD">
+                        <option>Go & No-Go</option>
+                        <option>Go</option>
+                        <option>No-Go</option>
+                    </select>
+                </div>
             </div>
             <h1>JESUS KING OF KINGS</h1>
         </div>
         <div class="right-panel">
-            <h3>Thread Gage Parameter</h3>
+            <h3 id="model-title">Thread Gage Parameter</h3>
             
-            <div class="table">
+            <div class="table" id="table">
                 <table>
                     <tr>
                         <th>Feature</th>
