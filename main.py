@@ -4,7 +4,8 @@ import xlwings as xl
 
 
 # file_path = r"/Volumes/DDrive/Python-Projects/thread-gage/Tex At Site Thread Gage Worksheet.xlsm"
-file_path = r"C:\Tex Onsite\Tex_reff\shernof\thread-gage\Parameters.xlsx"
+# file_path = r"C:\Tex Onsite\Tex_reff\shernof\thread-gage\Parameters.xlsx"
+file_path = r"/Volumes/DDrive/Python-Projects/thread-gage/Parameters.xlsx"
 dfm = pd.read_excel(file_path, sheet_name="metric", engine="openpyxl" )
 dfi = pd.read_excel(file_path, sheet_name="imperial", engine="openpyxl" )
 # mm = wb.sheets
@@ -185,41 +186,51 @@ def model_selected(model, unit):
         x = model.index('X')
         major_diameter = int(model[1:x])
         dsh = model.index('-')
-        pd = float(model[x + 1:dsh])
+        pitch_diameter = float(model[x + 1:dsh])
         tol = str(model[dsh + 1])
         gauge = model[len(model)-1:len(model)]
-        pitch_lo = round(int(major_diameter) - (.6495*pd),3)
-        
+        tolerance_grade = model[len(model)-2:len(model)]
+    
         # to get the tolerance
         # df.iloc[[0, 2], [1, 3]] selects the first and third rows, and the second and fourth columns).
         # tolerance_table = dfm.iloc[17:64,4:10]
-        # print(tolerance_table)
+        
         available = 0
         for i in tolerance_table:
             if major_diameter in i[0]:
                 available = 1
-                if pd in i:
+                if pitch_diameter in i:
                     if tol in i[2]:
                         tolerance = i[2].get(tol)
-                        print(tolerance)
+                        if gauge == "H":
+                            pitch_min = round(int(major_diameter) - (.6495*pitch_diameter),3)
+                            pitch_max = pitch_min + (tolerance / 1000)
+                            pitch_min_go = pitch_min
+        for i in deviation_table:
+            # print(i[0])
+            if tolerance in i[0]:
+                # for i, row in enumerate(deviation_table[0]):
+                du = i[1]["du"]
+                dl = i[2]["dl"]
+                worn = i[3]["worn"]
+                mu = i[4]["mu"]
+                ml = i[5]["ml"]
+                            
+                params = [tolerance, 
+                          {'Major Diameter':major_diameter,
+                           'MDLSL': mu,
+                           'MDUSL': ml}, 
+                          {'Pitch Diameter':pitch_diameter,
+                           'PDLSL': dl,
+                           'PDUSL':du}, 
+                          pitch_min,
+                          pitch_max,
+                          tolerance_grade, 
+                          gauge,  
+                          worn, ]
+                print(params)
+                return params
 
-        # print(tolerance_table)
-        # print(pitch_lo)
-        # if gauge == "H":
-            params: {
-                'Tolerance': tolerance,
-                'Pitch Lo': 1,
-                'Pitch Hi': 1,
-                'Major Lo': 1,
-                'Major Hi': 2
-            } # type: ignore
-        #     print(major_diameter,x, dsh, pd, tol, gauge)
-            print(tolerance)
-
-
-
-    
-    # return model
 
 
 
