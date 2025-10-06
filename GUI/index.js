@@ -27,31 +27,34 @@ async function model_selected(){
 
     let table = document.getElementById('table')
     table.innerHTML = 
-    `<tr>
-        <td>Pitch Diameter</td>
-        <td>${params[3]}</td>
-        <td>${params[4]}</td>
-    </tr>`
-    // let trP = document.createElement('tr')
-    // let td1P = document.createElement('td')
-    // let td2P = document.createElement('td')
-    // let td3P = document.createElement('td')
-    // let text1 = document.createTextNode('Pitch Diameter')
-    // let text2 = document.createTextNode(String(params[3]))
-    // let text3 = document.createTextNode(params[4])
-
     
-    // td1P.appendChild(text1)
-    // td2P.appendChild(text2)
-    // td3P.appendChild(text3)
-    // trP.appendChild(td1P)
+    `
+     <tr>
+        <th>Feature</th>
+        <th>Min</th>
+        <th>Max</th>
+    </tr>
+    <tr>
+        <td class="td">Pitch Diameter</td>
+        <td class="td">${params[3]}</td>
+        <td class="td">${params[4]}</td>
+    </tr>
 
-    // table.appendChild(trP)
+     <tr>
+        <td class="td">Pitch Diameter - Go</td>
+        <td class="td">${params[5]}</td>
+        <td class="td">${params[6]}</td>
+    </tr>
 
+     <tr>
+        <td class="td">Pitch Diameter - NoGo</td>
+        <td class="td">${params[5]}</td>
+        <td class="td">${params[6]}</td>
+    </tr>
     
-    // prm.innerHTML =  params.map((param) => 
-    //     `<option>${param}</option> `
-    // )
+    
+    `
+
 }
 
 

@@ -4,8 +4,8 @@ import xlwings as xl
 
 
 # file_path = r"/Volumes/DDrive/Python-Projects/thread-gage/Tex At Site Thread Gage Worksheet.xlsm"
-file_path = r"C:\Tex Onsite\Tex_reff\shernof\thread-gage\Parameters.xlsx"
-# file_path = r"/Volumes/DDrive/Python-Projects/thread-gage/Parameters.xlsx"
+# file_path = r"C:\Tex Onsite\Tex_reff\shernof\thread-gage\Parameters.xlsx"
+file_path = r"/Volumes/DDrive/Python-Projects/thread-gage/Parameters.xlsx"
 dfm = pd.read_excel(file_path, sheet_name="metric", engine="openpyxl" )
 dfi = pd.read_excel(file_path, sheet_name="imperial", engine="openpyxl" )
 # mm = wb.sheets
@@ -230,8 +230,6 @@ def model_selected(model, unit):
                           worn, ]
                 print(params)
                 return params
-
-
 
 
 #end of to JS
