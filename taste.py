@@ -1,18 +1,27 @@
-import eel
-import pandas as pd
-import xlwings as xl
+import xlwings as xw
+
+# --------------- Interface ----------------------------------------------- #
+
+# from tkinter import *
+# from tkinter import ttk
+# root = Tk()
+# frm = ttk.Frame(root, padding=10)
+# frm.grid()
+# ttk.Label(frm, text="Hello World!").grid(column=0, row=0)
+# ttk.Button(frm, text="Quit", command=root.destroy).grid(column=1, row=0)
+# root.mainloop()
+
+# --------------- Interface ----------------------------------------------- #
+
+# wb = xw.books.open(r"/Volumes/DDrive/PhytonZTM/Tex At Site Thread Gage Worksheet.xlsm")
+wb = xw.books.open(r'C:\Tex Onsite\Tex_reff\shernof\thread-gage\Tex At Site Thread Gage Worksheet.xlsm')
+#wb = xw.books.open(r'C:\Tex Onsite\Tex_reff\M25X1.5-6H.xlsm')
+
+td = wb.sheets("Test Data")
+vr = wb.sheets("Variables")
+import math
 
 
-# file_path = r"/Volumes/DDrive/Python-Projects/thread-gage/Tex At Site Thread Gage Worksheet.xlsm"
-file_path = r"C:\Tex Onsite\Tex_reff\shernof\thread-gage\Parameters.xlsx"
-# file_path = r"/Volumes/DDrive/Python-Projects/thread-gage/Parameters.xlsx"
-dfm = pd.read_excel(file_path, sheet_name="metric", engine="openpyxl" )
-dfi = pd.read_excel(file_path, sheet_name="imperial", engine="openpyxl" )
-# mm = wb.sheets
-eel.init('GUI')
-
-
-# AS1014 and AS1721
 def float_range(start, stop, step):  
   while start < stop:
       yield round(start, 1)
@@ -22,7 +31,6 @@ def float_range_imp(start, stop, step):
   while start < stop:
       yield round(start, 0.1)
       start += step
-
 
 """
 From Table 4.6 of AS1014 Deviations for Go Screw Plug Gauges
@@ -165,75 +173,201 @@ pitch_34p_fdforG_minord = [
     ]
 
 
-# To JS
+# 5.2 of B1.1; this is to define the factor to be use to compute the LE; whether 9P or 1D
+table_2_list = [12,16,20,28,32]
 
-@eel.expose    
-def get_model(unit="metric"):
-    if unit == "metric":
-        # series = df.iloc[16:58, 1] #metric
-        series = dfm.iloc[13:59, 1] #metric
-    else:
-        # series = df.iloc[89:119, 1] #imperial
-        series = dfi.iloc[13:44, 1] #imperial
-    items = [str(x).strip() for x in series.tolist() if pd.notna(x) and str(x).strip()]
-    # print(items)
-    return items
 
-@eel.expose
-def model_selected(model, unit):
-    if unit == "metric":
-        model = model
+def thread_gage(): 
+    unitCheck = td.range('D9').value
+    if unitCheck == 'mm':
+        model = td.range('D11').value
+        
         x = model.index('X')
-        major_diameter = int(model[1:x])
         dsh = model.index('-')
-        pitch_diameter = float(model[x + 1:dsh])
+        dia = int(model[1:x])
+        pd = float(model[x + 1:dsh])
         tol = str(model[dsh + 1])
         gauge = model[len(model)-1:len(model)]
-        tolerance_grade = model[len(model)-2:len(model)]
-    
-        # to get the tolerance
-        # df.iloc[[0, 2], [1, 3]] selects the first and third rows, and the second and fourth columns).
-        # tolerance_table = dfm.iloc[17:64,4:10]
-        
-        available = 0
+        vr.range('Q3').value = ''
+        vr.range('Q5').value = dia
+        vr.range('Q6').value = pd
+        vr.range('Q7').value = tol
+        vr.range('Q8').value = gauge
+        vr.range('R4').value = 'Tolerance'
+        vr.range('S4').value = 'Index'
+        vr.range('Q4').value = model
+        vr.range('P6').value = ""
+
         for i in tolerance_table:
-            if major_diameter in i[0]:
-                available = 1
-                if pitch_diameter in i:
+            
+            if dia in i[0]:
+                # if pd in i[1].values(): #acquire the value of the pitch D
+                if pd in i:
                     if tol in i[2]:
+                        vr.range('R5').value = i[2].get(tol) #getting the value using the key
                         tolerance = i[2].get(tol)
-                        if gauge == "H":
-                            pitch_min = round(int(major_diameter) - (.6495*pitch_diameter),3)
-                            pitch_max = pitch_min + (tolerance / 1000)
-                            pitch_min_go = pitch_min
-        for i in deviation_table:
-            # print(i[0])
-            if tolerance in i[0]:
-                # for i, row in enumerate(deviation_table[0]):
-                du = i[1]["du"]
-                dl = i[2]["dl"]
-                worn = i[3]["worn"]
-                mu = i[4]["mu"]
-                ml = i[5]["ml"]
-                            
-                params = [tolerance, 
-                          {'Major Diameter':major_diameter,
-                           'MDLSL': mu,
-                           'MDUSL': ml}, 
-                          {'Pitch Diameter':pitch_diameter,
-                           'PDLSL': dl,
-                           'PDUSL':du}, 
-                          pitch_min,
-                          pitch_max,
-                          tolerance_grade, 
-                          gauge,  
-                          worn, ]
-                print(params)
-                return params
+
+                        # getting the deviations from go table
+                        #test = [row[0] for row in deviation_table] 
+
+                        # deviations for go
+                        for go, rng in  enumerate(deviation_table):
+                            if tolerance in rng[0]:
+                                
+                                vr.range('V12').value = (deviation_table[go][2]["dl"])/1000
+                                vr.range('V13').value = (deviation_table[go][1]["du"])/1000
+                                vr.range('X12').value = (deviation_table[go][5]["ml"])/1000
+                                vr.range('X13').value = (deviation_table[go][4]["mu"])/1000
+                                vr.range('Z12').value = (deviation_table[go][3]["worn"])/1000
+                        # deviations for no-go
+                        for nogo, rng in enumerate(deviation_table_nogo):
+                            if tolerance in rng[0]:
+                                vr.range('W12').value = (deviation_table_nogo[nogo][2]["dl"])/1000
+                                vr.range('W13').value = (deviation_table_nogo[nogo][1]["du"])/1000
+                                vr.range('Y12').value = (deviation_table_nogo[nogo][5]["ml"])/1000
+                                vr.range('Y13').value = (deviation_table_nogo[nogo][4]["mu"])/1000
+                                vr.range('AA12').value = (deviation_table_nogo[nogo][3]["worn"])/1000
+                        
+
+                        for i, rng in enumerate(deviation_table):
+                            if tolerance in rng[0]:
+                                vr.range('S5').value = i # deviation index
+                                
+        # minor diameter
+        for item in pitch_34p_fdforG_minord:
+            if pd in item[0].values():
+                if tol in item[3]:
+                    vr.range('AA4').value = item[3].get(tol) #acquire the key for the minor diameter
+        
+        #for G
+        for item in pitch_34p_fdforG_minord:
+            if gauge == 'G':
+                if pd in item[0].values():
+                    vr.range('R8') .value = item[2]/1000
+            else:
+                vr.range('R8') .value = ''
+
+    else:
+        
+        print('Thank you Lord')
+        # vr.range('P4').value = 'Metric Equivalent'
+        model = td.range('D11').value
+        x = model.index('X')
+        space1 = model.index(' ')
+        space2 = model.find(' ',2)
+        # sl = model.index('/')
+        # print(sl)
+
+        try: 
+            model.index('/') # this is to test if the diameter > 1"
+
+        except ValueError:
+            dia_converted = round(int(model[0:x])  * 25.4)
+            dia = int(model[0:x])
+        else:
+            if model.index('/') == 1:  #1/4X28 UNF-2B
+                dia_converted = round(int(model[0]) / int(model[2:x]) * 25.4)
+                dia = int(model[0]) / int(model[2:x])
+                vr.range('P5').value = dia
+
+            elif model.index('/') == -1: #1X8 UNC-2B
+                dia_converted = round(int(model[0]) * 25.4)
+                dia = int(model[0]) 
+                vr.range('P5').value = dia
+         
+            elif model.index('/') == 2: #15/16X20 UNEF-2B
+                dia_converted = round(int(model[0:1]) / int(model[3:x]) * 25.4)
+                dia = int(model[0:1]) / int(model[3:x]) 
+                vr.range('P5').value = dia
+
+            elif model.index('/') == 3: #1 1/4X7 UNF-2B
+                dia_converted = round( int(model[0]) + int(model[2:model.index('/')]) / int(model[model.index('/') + 1:x]) + int(model[0]) * 25.4)
+                dia = (int(model[0]) + int(model[2:model.index('/')]) / int(model[model.index('/') + 1:x]))
+                vr.range('P5').value = dia
+
+        
+    # Getting the pitch diameter
+        space2
+        pd = round(float(model[x + 1:space2]) if space2 else float(model[x + 1:space1]))
+        for i in table_2_list:
+            if pd in table_2_list:
+                vr.range('R4').value = "Yes"
+            else:
+                vr.range('R4').value = "No"
+
+    # converting TPI to mm
+        pd_converted = 1 /float(model[x + 1:space2]) * 25.4 if space2 else float(model[x + 1:space1] * 25.4) 
+        pdtm = 1 / float(model[x + 1:space2]) * 25.4 if space2 else 1 / float(model[x + 1:space1])
+        test = [row[1] for row in tolerance_table] 
+
+        """
+        the pdtm column was separated and get the minimum difference to get the nearest equivalent
+        of the pitch diameter. 
+         """
+        pd_list = []
+        for i in test: 
+            """
+            this is the loop of all the pitch diameter and put inside the test[] to be able to get the difference of each pitch vs the actual pitch of the IUT
+            the minimum difference is the appropriate match of the converted TPI to mm
+            """
+            pd_diff = abs(pdtm - i) #difference between each available pitch versus the IUT pitch
+            pd_list.append(pd_diff)
+            pd_index =pd_list.index(min(pd_list))
+            available_pitch = test[pd_index]
+        pdtm > available_pitch
+        pd_converted = abs(min(pd_list)-pdtm) if pdtm > available_pitch else abs(min(pd_list)+pdtm)
+
+        # getting the tolerance
+        dsh = model.index('-')
+        toltm = model[dsh + 1:]
+        if toltm == '1B':
+            tol = '7'
+        elif toltm == '2B':
+            tol = '6'
+        else:
+            toltm = '3B'
+            tol = '5'
+        
+        """
+        Getting the constants for the Pitch Diameter
+        """
+        
+        for i in imperial_tolerance_pitch_diameter:
+            if int(dia) in i[0]:
+                """
+                if pd in i[1].values(): #acquire the value of the pitch D
+                This was changed because the tolerance_table[1] was changed from a dict to list so that the data can be iterate easily
+                """
+                if pd in i[1]:
+                    vr.range('R5').value = i[1].get(pd) #getting the value using the key
+                    print(i[1].get(pd))
+        # minor and major diameter tolerance
+        for i in imperial_tolerance_major_minorD:
+            if int(dia) in i[0]:
+                if pd in i[1]:
+                    vr.range('S5').value = i[1].get(pd) #acquire the key for the minor diameter
+                    print(i[1].get(pd))
+    
+        converted_model = (f'M{dia_converted}X{pd_converted}-{tol}H')
+        vr.range('P4').value = model
+        # vr.range('P5').value = dianr #non rounded diameter
+        vr.range('P5').value = dia #non rounded diameter
+        vr.range('P6').value = pd #non rounded pitch diameter
+        vr.range('P7').value = toltm #non rounded pitch diameter        
+        vr.range('Q4').value = converted_model
+        vr.range('Q5').value = dia_converted
+        vr.range('Q6').value = pd_converted
+        vr.range('Q7').value = tol
+        gauge = converted_model[len(converted_model)-1:len(converted_model)]
+        vr.range('Q8').value = gauge
+        vr.range('R4').value = 'Pitch D Tolerance'
+        vr.range('S4').value = 'Diameter Tolerance'
 
 
+thread_gage()
+
+print(xw.__version__)
+    
+    
 
 
-#end of to JS
-if __name__ == "__main__":
-    eel.start('index.html', size=(900, 600), position=(50,50))
